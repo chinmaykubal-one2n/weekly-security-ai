@@ -28,3 +28,5 @@ go.work
 
 .env
 .env.example
+NACK - Agentic AI.pdf
+trivy_report.sh
