@@ -1,17 +1,13 @@
-// cmd/server/main.go
 package main
 
 import (
 	"os"
 	"os/exec"
-
-	"github.com/joho/godotenv"
-	// "github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-
 	"weeklysec/internal/api"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {

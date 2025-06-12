@@ -1,4 +1,3 @@
-// internal/trivy/scanner.go
 package trivy
 
 import (
