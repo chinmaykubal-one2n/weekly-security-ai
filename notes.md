@@ -160,16 +160,140 @@ You are building an **MCP server**:
 
 
 
-// curl -X POST http://localhost:8080/scan \
-//   -H "Content-Type: application/json" \
-//   -d '{
-//     "target_type": "file",
-//     "target": "/home/one2n/Desktop/NACK/vulnerable-manifests/Dockerfile",
-//     "summarize": true
-//   }'
+<!-- ---------------------------------------------------------------------------------------- -->
 
-// curl -X POST http://localhost:8080/scan   -H "Content-Type: application/json"   -d '{
-//     "target_type": "file",
-//     "target": "/home/one2n/Desktop/NACK/vulnerable-manifests/k8s-manifets.yml",
-//     "summarize": true
-//   }'
+Great, buddy — your current implementation already lays a **strong foundation**, and now that we know your **hackathon's theme is to use AI Agents or MCP servers**, here's how we can **level it up** into a strong, on-theme submission.
+
+---
+
+## 🔧 What You’ve Built So Far
+
+✅ A Go-based backend that:
+
+* Uses **Trivy** to scan Dockerfiles / K8s manifests
+* Uses an **LLM** (via OpenRouter) to summarize scan results
+* Exposes all this via an HTTP API
+
+This is already great — you’ve done the **automation part**.
+
+---
+
+## 🎯 What You Need to Add Now
+
+To satisfy **"AI Agents and/or MCP Servers"**, you need to turn your tool into something that can be **used by an LLM agent via MCP**, or **build an LLM agent that interacts with your tool.**
+
+You can go in **one of two directions**, and both are valid for the hackathon:
+
+---
+
+## ✅ Option 1: Turn Your Server Into an MCP Server (Best Fit for You)
+
+### 🧠 What This Means
+
+Wrap your Trivy + LLM backend in a **Model Context Protocol**-compatible interface, so **LLMs can call it**.
+
+### 💡 Features You Can Expose via MCP Schema
+
+You’ll need to define an MCP schema (JSON file) that defines tools like:
+
+```json
+{
+  "tools": [
+    {
+      "name": "scan_dockerfile",
+      "description": "Scan a Dockerfile for security vulnerabilities using Trivy",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "description": "Path to the Dockerfile" }
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "scan_k8s_manifest",
+      "description": "Scan a Kubernetes manifest file using Trivy",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string", "description": "Path to the manifest file" }
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "summarize_scan",
+      "description": "Use LLM to summarize Trivy scan results",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "scan_output": { "type": "string", "description": "Raw Trivy scan output" }
+        },
+        "required": ["scan_output"]
+      }
+    }
+  ]
+}
+```
+
+Then serve this at:
+
+```
+.well-known/mcp-schema.json
+```
+
+---
+
+### 🛠️ Steps to Convert Your Project to MCP-Compatible
+
+1. ✅ Create `mcp-schema.json` in `.well-known/`
+2. ✅ Serve it from a `/well-known/mcp-schema.json` endpoint in your Go app
+3. ✅ Modify your `ScanHandler` so each action can be called individually:
+
+   * `POST /scan/dockerfile`
+   * `POST /scan/k8s`
+   * `POST /summarize`
+4. ✅ LLM agent can now use this as a toolset (if wired via OpenRouter or OpenAI tools)
+
+---
+
+## ✅ Option 2: Build a Lightweight AI Agent That Uses Your Server
+
+If you don't want to go full MCP, you can **write a Python or Go-based agent** that:
+
+* Accepts user input (e.g., “scan my infra”)
+* Breaks that into steps (like AutoGPT does)
+* Calls your Go API (`/scan`) + gets summary
+* Maybe even sends results to Slack/email/etc.
+
+🧠 You can say: “We used a local LLM agent to drive our scan server.”
+
+---
+
+## 🏆 Suggested Title and Submission Summary
+
+**Title:**
+🛡️ TrivySec-MCP: AI-Powered Vulnerability Scanner for DevSecOps via MCP
+
+**Description:**
+We built a Go-based MCP-compatible server that enables AI agents to:
+
+* Trigger vulnerability scans on Docker/K8s configs using Trivy
+* Request AI-based summaries using DeepSeek LLM
+* Integrate results into workflows like Slack alerts or CI pipelines
+
+This allows LLMs or AI agents to participate directly in DevSecOps automation.
+
+---
+
+## 🔚 TL;DR – What You Can Build Next
+
+| Task                                            | Description                              |
+| ----------------------------------------------- | ---------------------------------------- |
+| ✅ Serve MCP schema                              | Add `.well-known/mcp-schema.json`        |
+| ✅ Break scan API into clear tool-like endpoints | e.g., `/scan/dockerfile`, `/summarize`   |
+| 🧠 Optional: Create AI agent frontend           | Let it call your APIs automatically      |
+| 🎯 Bonus: Add `fix suggestions`                 | Let the LLM suggest fixes to Dockerfiles |
+| 📤 Bonus: Add Slack/email integration           | Send summaries to team automatically     |
+
+Let me know which direction you'd like help with — I can start scaffolding the `.well-known/mcp-schema.json` or help with turning your Go backend into an MCP server.
