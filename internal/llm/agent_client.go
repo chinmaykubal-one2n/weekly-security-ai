@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -22,10 +23,9 @@ type AgentClient struct {
 
 // NewAgentClient creates a new LLM client optimized for agent operations
 func NewAgentClient() (*AgentClient, error) {
-	apiKey := "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"
-	model := "deepseek/deepseek-chat-v3-0324:free"
-	// apiKey := os.Getenv("OPENROUTER_API_KEY")
-	// model := os.Getenv("LLM_MODEL")
+
+	apiKey := os.Getenv("OPENROUTER_API_KEY")
+	model := os.Getenv("LLM_MODEL")
 
 	if apiKey == "" {
 		return nil, fmt.Errorf("OPENROUTER_API_KEY environment variable is required")
